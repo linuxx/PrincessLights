@@ -36,8 +36,7 @@ char strPass[50] = "";
 char strTopic[50] = "";
 
 //pin for lights
-#define PIN 0
-
+#define PIN D5
 
 //mqtt
 WiFiClient espClient;
@@ -192,19 +191,24 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.println("] ");
   for (u_int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    //Serial.print((char)payload[i]);
     strPayload += (char)payload[i];
   }
+  Serial.println("Received: " + strPayload);
   
 
   if (strPayload == "off") {
+    Serial.print("Activating: ");
     Serial.println("OFF");
     digitalWrite(PIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 
   if (strPayload == "on") {
+    Serial.print("Activating: ");
     Serial.println("ON");
     digitalWrite(PIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
 }
@@ -213,19 +217,22 @@ void setup() {
   Serial.begin(9600);
   delay(5000);
 
-  pinMode(PIN, INPUT_PULLUP);
-  Serial.println("Giving time for the button to be pushed for reset");
-  delay(5000);
+  //pinMode(PIN, INPUT_PULLUP);
+  //Serial.println("Giving time for the button to be pushed for reset");
+  //delay(5000);
 
-  if(digitalRead(PIN) == LOW)
-  {
-    Serial.print("Button is down, wiping!!!");
-    clearConfigs();
-  }
+  //if(digitalRead(PIN) == LOW)
+  //{
+  //  Serial.print("Button is down, wiping!!!");
+  //  clearConfigs();
+  //}
 
 
   //setup pin for output
   pinMode(PIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+
 
   //setup connection to the file system
   if (!LittleFS.begin()) {
@@ -254,6 +261,9 @@ void setup() {
 
   //wait 3 minutes for the wifi to come up
   wifiManager.setConfigPortalTimeout(180);
+
+  //timeout for connect to wifi before we restart
+  //wifiManager.setTimeout(60);
 
   //keep config portal going
   wifiManager.setDisableConfigPortal(false);
@@ -295,6 +305,7 @@ void loop() {
   if(portalRunning){
     //process the web portal traffic
     wifiManager.process();
+
   }
 
 
